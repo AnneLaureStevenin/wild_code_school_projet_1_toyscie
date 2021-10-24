@@ -1,0 +1,7 @@
+SELECT country Country, YEAR(orderDate) Year, DATE_FORMAT(orderDate, "%M") Month, sum(quantityOrdered * priceEach) Sales
+FROM customers c
+JOIN orders o ON c.customerNumber = o.customerNumber
+JOIN orderdetails od ON o.orderNumber = od.orderNumber
+WHERE YEAR(orderDate) = YEAR(CURDATE()) AND (MONTH(orderDate) = MONTH(CURDATE())-1 OR MONTH(orderDate) = MONTH(CURDATE()) -2)
+GROUP BY Country, Year, MONTH(orderDate)
+ORDER BY Country, Year, MONTH(orderDate);

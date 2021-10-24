@@ -1,0 +1,36 @@
+WITH table_donnes as (
+	select year(orderDate) Year, DATE_FORMAT(orderDate, "%M") Month,
+	productLine Category, sum(quantityOrdered) Total_sold
+	from orderdetails od
+	join orders o on o.orderNumber = od.orderNumber
+	join products p on p.productCode = od.productCode
+	group by Year, Month, Category
+	order by Year, MONTH(orderDate), Category
+	)
+SELECT
+IFNULL(t2.Category, t1.Category) Category,
+IFNULL(t2.Year, t1.Year-1) Year,
+IFNULL(t2.Month, t1.Month) Month,
+IFNULL(t2.Total_sold, 0) Total_sold,
+IFNULL(t1.Year, t2.Year+1) Year,
+IFNULL(t1.Month, t2.Month) Month,
+IFNULL(t1.Total_sold, 0) Total_Sold,
+COALESCE(t1.Total_sold - t2.Total_sold, t1.Total_sold, -t2.Total_Sold) Difference,
+IF(t1.Total_sold IS NULL, -100, (IF(t2.Total_sold IS NULL, 1000, ROUND((t1.Total_sold - t2.Total_sold)*100/t2.Total_sold, 1)))) Rate_change
+FROM table_donnes t2
+RIGHT JOIN table_donnes t1 ON t1.month = t2.month AND t1.Category = t2.Category AND t2.year = t1.year - 1
+WHERE t1.Year = 2021 AND t2.Year = 2020
+UNION
+SELECT
+IFNULL(t2.Category, t1.Category) Category,
+IFNULL(t2.Year, t1.Year-1) Year,
+IFNULL(t2.Month, t1.Month) Month,
+IFNULL(t2.Total_sold, 0) Total_sold,
+IFNULL(t1.Year, t2.Year+1) Year,
+IFNULL(t1.Month, t2.Month) Month,
+IFNULL(t1.Total_sold, 0) Total_Sold,
+COALESCE(t1.Total_sold - t2.Total_sold, t1.Total_sold, -t2.Total_Sold) Difference,
+IF(t1.Total_sold IS NULL, -100, (IF(t2.Total_sold IS NULL, 1000, ROUND((t1.Total_sold - t2.Total_sold)*100/t2.Total_sold, 1)))) Rate_change
+FROM table_donnes t2
+LEFT JOIN table_donnes t1 ON t1.month = t2.month AND t1.Category = t2.Category AND t2.year = t1.year - 1
+WHERE t1.Year = 2021 AND t2.Year = 2020;

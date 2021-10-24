@@ -1,0 +1,20 @@
+WITH total_commande as(
+						SELECT o2.customerNumber,c.customerName, SUM(o.quantityOrdered * o.priceEach) AS total_due 
+						FROM orders o2
+							JOIN orderdetails o 
+								ON o.orderNumber = o2.orderNumber
+							JOIN customers c
+								ON o2.customerNumber = c.customerNumber 
+						GROUP BY o2.customerNumber
+						),
+total_paiement as(
+					SELECT p.customerNumber, sum(p.amount) AS total_paid
+					FROM payments p
+					GROUP BY customerNumber
+						)
+SELECT tc.customerName, total_due, total_paid, (total_due - total_paid) AS reste_a_payer
+FROM total_commande tc
+	LEFT JOIN total_paiement tp 
+		ON tp.customerNumber = tc.customerNumber
+WHERE total_due <> total_paid
+ORDER BY reste_a_payer DESC ;

@@ -1,0 +1,15 @@
+WITH ranker AS (
+    SELECT YEAR(o.orderDate) Year, MONTH(orderDate) Month_number, DATE_FORMAT(orderDate, "%M") Month, concat(firstname, ' ', lastname) Name,
+    sum(od.quantityOrdered * od.priceEach) CA, RANK() OVER (
+    PARTITION BY year, MONTH(orderDate)
+    ORDER BY CA DESC) as Sales_rank
+    FROM employees e 
+    JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber
+    JOIN orders o ON c.customerNumber = o.customerNumber
+    JOIN orderdetails od ON o.orderNumber = od.orderNumber
+    GROUP BY year, MONTH(orderDate), name
+    ORDER BY year, MONTH(orderDate), name
+    )
+SELECT Year, Month, Name, CA, Sales_rank FROM ranker
+WHERE sales_rank <=2 AND Year = YEAR(CURDATE())
+ORDER BY Year, Month_number, Sales_rank;

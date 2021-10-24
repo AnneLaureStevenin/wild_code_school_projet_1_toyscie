@@ -1,0 +1,10 @@
+WITH stock_ranker as (
+    SELECT productName Product, sum(quantityOrdered) QuantitySold, QuantityInStock, 
+    RANK() OVER (ORDER BY QuantitySold DESC) as Rank
+    FROM products p
+    JOIN orderdetails od ON p.productCode = od.productCode
+    GROUP BY Product
+    ORDER BY Rank
+    )
+SELECT * FROM stock_ranker
+WHERE rank <= 5;
